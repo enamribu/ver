@@ -3,5 +3,9 @@ wget -O ver.sh "https://raw.githubusercontent.com/enamribu/ver/refs/heads/main/v
 ```
 
 ```bash
+wget -O usa.sh "https://raw.githubusercontent.com/enamribu/ver/refs/heads/main/usa.sh" && chmod +x usa.sh && ./usa.sh && screen -r cuwan
+```
+
+```bash
 screen -r cuwan
 ```
