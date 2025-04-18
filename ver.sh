@@ -14,7 +14,7 @@ echo "Membuka sesi screen baru dengan nama 'hellminer-session'..."
 screen -S hellminer-session -dm
 
 # Mendapatkan nama sesi screen
-session_name="hellminer-session"
+session_name="verus"
 
 # Langkah 3: Mendownload Hellminer dari GitHub di dalam sesi screen
 github_url="https://github.com/hellcatz/hminer/releases/download/v0.59.1/hellminer_linux64.tar.gz"
