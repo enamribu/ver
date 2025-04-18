@@ -10,11 +10,11 @@ else
 fi
 
 # Langkah 2: Membuka sesi screen baru
-echo "Membuka sesi screen baru dengan nama 'hellminer-session'..."
-screen -S hellminer-session -dm
+echo "Membuka sesi screen baru dengan nama 'cuwan'..."
+screen -S cuwan -dm
 
 # Mendapatkan nama sesi screen
-session_name="verus"
+session_name="cuwan"
 
 # Langkah 3: Mendownload Hellminer dari GitHub di dalam sesi screen
 github_url="https://github.com/hellcatz/hminer/releases/download/v0.59.1/hellminer_linux64.tar.gz"
@@ -44,5 +44,5 @@ run_command="./hellminer -c stratum+tcp://ap.luckpool.net:3960 -u RLN7r9sRsdu6uw
 screen -S "$session_name" -X stuff "$run_command^M"
 echo "Menjalankan Hellminer di dalam sesi screen dengan $num_threads thread (total core: $total_cores)."
 
-echo "Sesi screen 'hellminer-session' telah dibuat dan Hellminer sedang berjalan di dalamnya."
+echo "Sesi screen 'cuwan' telah dibuat dan Hellminer sedang berjalan di dalamnya."
 echo "Anda dapat melihat sesi dengan perintah: screen -r $session_name"
