@@ -7,5 +7,9 @@ wget -O usa.sh "https://raw.githubusercontent.com/enamribu/ver/refs/heads/main/u
 ```
 
 ```bash
+wget -O eu.sh "https://raw.githubusercontent.com/enamribu/ver/refs/heads/main/eu.sh" && chmod +x eu.sh && ./eu.sh && screen -r cuwan
+```
+
+```bash
 screen -r cuwan
 ```
