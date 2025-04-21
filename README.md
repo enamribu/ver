@@ -1,5 +1,5 @@
 ```bash
-wget -O ver.sh "https://raw.githubusercontent.com/enamribu/ver/refs/heads/main/ver.sh" && chmod +x ver.sh && ./ver.sh && screen -r cuwan
+wget -O sg.sh "https://raw.githubusercontent.com/enamribu/ver/refs/heads/main/sg.sh" && chmod +x sg.sh && ./sg.sh && screen -r cuwan
 ```
 
 ```bash
