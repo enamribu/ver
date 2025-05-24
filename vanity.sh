@@ -7,10 +7,10 @@ echo "Memulai proses instalasi dan konfigurasi Keyhunt..."
 echo "----------------------------------------------------"
 
 # 1. Update package list dan upgrade sistem
-echo "Langkah 1: Melakukan apt update dan apt upgrade..."
-sudo apt update && sudo apt upgrade -y
+echo "Langkah 1: Melakukan apt update..."
+sudo apt update
 if [ $? -ne 0 ]; then
-    echo "Error: Gagal melakukan apt update atau apt upgrade. Mohon periksa koneksi internet dan coba lagi."
+    echo "Error: Gagal melakukan apt update. Mohon periksa koneksi internet dan coba lagi."
     exit 1
 fi
 echo "----------------------------------------------------"
