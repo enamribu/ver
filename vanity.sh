@@ -1,133 +1,125 @@
 #!/bin/bash
 
-# Pastikan skrip dijalankan dengan hak akses root (sudo)
-if [ "$(id -u)" -ne 0 ]; then
-  echo "Skrip ini perlu dijalankan dengan hak akses root (sudo)."
-  exit 1
-fi
+# Skrip untuk menginstal dependensi, mengkloning, mengkompilasi, dan menjalankan keyhunt dalam screen
 
-echo "Memulai proses instalasi dan konfigurasi..."
+# Pesan Awal
+echo "Memulai proses instalasi dan konfigurasi Keyhunt..."
+echo "----------------------------------------------------"
 
-# 1. Update dan upgrade paket sistem
-echo "LANGKAH 1: Melakukan update dan upgrade paket sistem..."
-apt update && apt upgrade -y
+# 1. Update package list dan upgrade sistem
+echo "Langkah 1: Melakukan apt update dan apt upgrade..."
+sudo apt update && sudo apt upgrade -y
 if [ $? -ne 0 ]; then
-    echo "Gagal melakukan update dan upgrade paket sistem. Menghentikan skrip."
+    echo "Error: Gagal melakukan apt update atau apt upgrade. Mohon periksa koneksi internet dan coba lagi."
     exit 1
 fi
-echo "Update dan upgrade paket sistem selesai."
-echo ""
+echo "----------------------------------------------------"
 
-# Instalasi paket yang dibutuhkan
-echo "LANGKAH 2: Menginstall paket yang dibutuhkan (git, build-essential, libssl-dev, libgmp-dev)..."
-apt install git -y
+# 2. Install dependensi yang dibutuhkan
+echo "Langkah 2: Menginstal dependensi (git, build-essential, libssl-dev, libgmp-dev)..."
+sudo apt install git -y
 if [ $? -ne 0 ]; then
-    echo "Gagal menginstall git. Menghentikan skrip."
+    echo "Error: Gagal menginstal git."
     exit 1
 fi
 
-apt install build-essential -y
+sudo apt install build-essential -y
 if [ $? -ne 0 ]; then
-    echo "Gagal menginstall build-essential. Menghentikan skrip."
+    echo "Error: Gagal menginstal build-essential."
     exit 1
 fi
 
-apt install libssl-dev -y
+sudo apt install libssl-dev -y
 if [ $? -ne 0 ]; then
-    echo "Gagal menginstall libssl-dev. Menghentikan skrip."
+    echo "Error: Gagal menginstal libssl-dev."
     exit 1
 fi
 
-apt install libgmp-dev -y
+sudo apt install libgmp-dev -y
 if [ $? -ne 0 ]; then
-    echo "Gagal menginstall libgmp-dev. Menghentikan skrip."
+    echo "Error: Gagal menginstal libgmp-dev."
     exit 1
 fi
-echo "Instalasi paket yang dibutuhkan selesai."
-echo ""
+echo "Dependensi berhasil diinstal."
+echo "----------------------------------------------------"
 
-# 2. Clone repository keyhunt
-echo "LANGKAH 3: Melakukan clone repository keyhunt..."
+# 3. Clone repository keyhunt
+echo "Langkah 3: Mengkloning repository keyhunt dari GitHub..."
 # Hapus direktori keyhunt jika sudah ada untuk menghindari konflik
 if [ -d "keyhunt" ]; then
-    echo "Direktori 'keyhunt' sudah ada. Menghapus direktori lama..."
+    echo "Direktori 'keyhunt' sudah ada. Menghapusnya..."
     rm -rf keyhunt
 fi
 git clone https://github.com/enamribu/keyhunt.git
 if [ $? -ne 0 ]; then
-    echo "Gagal melakukan clone repository keyhunt. Menghentikan skrip."
+    echo "Error: Gagal mengkloning repository keyhunt. Periksa URL repository atau koneksi internet."
     exit 1
 fi
-echo "Clone repository keyhunt selesai."
-echo ""
+echo "Repository berhasil dikloning."
+echo "----------------------------------------------------"
 
-# 3. Masuk ke direktori keyhunt
-echo "LANGKAH 4: Masuk ke direktori keyhunt..."
+# 4. Masuk ke direktori keyhunt
+echo "Langkah 4: Masuk ke direktori 'keyhunt'..."
 cd keyhunt
 if [ $? -ne 0 ]; then
-    echo "Gagal masuk ke direktori keyhunt. Pastikan repository berhasil di-clone. Menghentikan skrip."
+    echo "Error: Gagal masuk ke direktori 'keyhunt'. Pastikan repository berhasil dikloning."
     exit 1
 fi
-echo "Berhasil masuk ke direktori keyhunt."
-echo ""
+echo "Berada di direktori $(pwd)"
+echo "----------------------------------------------------"
 
-# 4. Compile keyhunt
-echo "LANGKAH 5: Melakukan kompilasi keyhunt menggunakan 'make'..."
+# 5. Compile keyhunt
+echo "Langkah 5: Mengkompilasi keyhunt menggunakan 'make'..."
 make
 if [ $? -ne 0 ]; then
-    echo "Gagal melakukan kompilasi keyhunt. Pastikan semua dependensi terinstall dengan benar. Menghentikan skrip."
+    echo "Error: Gagal mengkompilasi keyhunt. Pastikan semua dependensi build terinstal dengan benar."
     exit 1
 fi
-echo "Kompilasi keyhunt selesai."
-echo ""
+echo "Kompilasi berhasil."
+echo "----------------------------------------------------"
 
-# Kembali ke direktori sebelumnya (opsional, tergantung di mana Anda ingin BTC.py diunduh)
-# cd ..
+# 6. Membuat screen dengan nama btc dan membukanya
+# 7. Menjalankan btc.py didalam screen
+echo "Langkah 6 & 7: Membuat screen 'btc' dan menjalankan 'btc.py' di dalamnya..."
 
-# 5. Download BTC.py
-echo "LANGKAH 6: Mengunduh BTC.py..."
-# Mengunduh ke direktori saat ini (yaitu di dalam keyhunt)
-# Jika ingin di direktori lain, sesuaikan path atau cd .. terlebih dahulu
-wget https://raw.githubusercontent.com/enamribu/ver/refs/heads/main/BTC.py -O BTC.py
-if [ $? -ne 0 ]; then
-    echo "Gagal mengunduh BTC.py. Menghentikan skrip."
+# Periksa apakah btc.py ada
+if [ ! -f "btc.py" ]; then
+    echo "Error: File 'btc.py' tidak ditemukan di direktori 'keyhunt'. Pastikan file tersebut ada."
+    # Mencoba mencari file python lain jika btc.py tidak ada, sebagai alternatif
+    # Misalnya, jika ada keyhunt.py atau file python utama lainnya.
+    # Untuk contoh ini, kita akan tetap keluar jika btc.py tidak ada.
     exit 1
 fi
-# Memberikan izin eksekusi pada BTC.py
-chmod +x BTC.py
-echo "Pengunduhan BTC.py selesai dan izin eksekusi telah diberikan."
-echo ""
 
-# 6. Membuat screen dengan nama btc dan menjalankan BTC.py
-echo "LANGKAH 7: Membuat sesi screen 'btc' dan menjalankan BTC.py..."
-# Cek apakah screen sudah terinstall
+# Periksa apakah screen sudah terinstal
 if ! command -v screen &> /dev/null
 then
-    echo "'screen' tidak terinstall. Mencoba menginstall..."
-    apt install screen -y
+    echo "'screen' tidak terinstal. Mencoba menginstal..."
+    sudo apt install screen -y
     if [ $? -ne 0 ]; then
-        echo "Gagal menginstall 'screen'. Anda perlu menginstallnya secara manual. Menghentikan skrip."
+        echo "Error: Gagal menginstal 'screen'. Mohon instal secara manual dan jalankan skrip lagi."
         exit 1
     fi
-    echo "'screen' berhasil diinstall."
 fi
 
-# Membuat dan menjalankan skrip dalam sesi screen baru
-# -S btc: nama sesi
-# -dm: detach mode (memulai screen di background)
-# python3 ./BTC.py: perintah yang dijalankan di dalam screen
-# Pastikan python3 terinstall atau ganti dengan 'python' jika menggunakan versi python yang berbeda
-screen -S btc -dm python3 ./BTC.py
+# Membuat dan menjalankan perintah di dalam screen
+# Opsi -S btc: Membuat sesi screen dengan nama 'btc'
+# Opsi -d -m: Memulai screen dalam mode detached (background)
+# sh -c 'python3 btc.py; exec bash': Menjalankan btc.py, dan setelah selesai, menjaga sesi screen tetap terbuka dengan bash
+# Anda mungkin perlu menyesuaikan 'python3' menjadi 'python' tergantung konfigurasi server Anda
+screen -S btc -d -m sh -c 'python3 btc.py; exec bash'
+
 if [ $? -ne 0 ]; then
-    echo "Gagal membuat sesi screen 'btc' atau menjalankan BTC.py. Periksa log screen."
-    # Untuk melihat log screen, Anda bisa attach ke sesi: screen -r btc
+    echo "Error: Gagal membuat atau menjalankan perintah di dalam screen 'btc'."
+    echo "Anda bisa mencoba menjalankan secara manual: screen -S btc lalu python3 btc.py"
     exit 1
 fi
 
-echo ""
-echo "Semua proses telah selesai."
-echo "Skrip BTC.py sekarang berjalan di dalam sesi screen bernama 'btc'."
-echo "Anda dapat menghubungkan kembali ke sesi screen dengan perintah: screen -r btc"
-echo "Untuk keluar dari sesi screen tanpa menghentikan skrip, tekan Ctrl+A lalu D."
+echo "----------------------------------------------------"
+echo "Proses selesai!"
+echo "Keyhunt seharusnya sekarang berjalan di dalam sesi screen bernama 'btc'."
+echo "Untuk masuk ke screen, gunakan perintah: screen -r btc"
+echo "Untuk keluar dari screen tanpa menghentikan proses (detach), tekan Ctrl+A lalu D."
+echo "----------------------------------------------------"
 
 exit 0
