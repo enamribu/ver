@@ -1,3 +1,21 @@
+# === Auto Install Dependencies ===
+import subprocess
+import sys
+import importlib
+
+required_modules = ["requests"]
+
+for module in required_modules:
+    try:
+        importlib.import_module(module)
+    except ImportError:
+        print(f"[!] Modul '{module}' tidak ditemukan. Menginstall...")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", module])
+    else:
+        pass  # Modul sudah terinstall, lanjut
+
+# =================================
+
 import subprocess
 import requests
 import os
