@@ -79,15 +79,15 @@ echo "Kompilasi berhasil."
 echo "----------------------------------------------------"
 
 # 6. Membuat screen dengan nama btc dan membukanya
-# 7. Menjalankan btc.py didalam screen
-echo "Langkah 6 & 7: Membuat screen 'btc' dan menjalankan 'btc.py' di dalamnya..."
+# 7. Menjalankan BTC.py didalam screen
+echo "Langkah 6 & 7: Membuat screen 'btc' dan menjalankan 'BTC.py' di dalamnya..."
 
-# Periksa apakah btc.py ada
-if [ ! -f "btc.py" ]; then
-    echo "Error: File 'btc.py' tidak ditemukan di direktori 'keyhunt'. Pastikan file tersebut ada."
-    # Mencoba mencari file python lain jika btc.py tidak ada, sebagai alternatif
+# Periksa apakah BTC.py ada
+if [ ! -f "BTC.py" ]; then
+    echo "Error: File 'BTC.py' tidak ditemukan di direktori 'keyhunt'. Pastikan file tersebut ada."
+    # Mencoba mencari file python lain jika BTC.py tidak ada, sebagai alternatif
     # Misalnya, jika ada keyhunt.py atau file python utama lainnya.
-    # Untuk contoh ini, kita akan tetap keluar jika btc.py tidak ada.
+    # Untuk contoh ini, kita akan tetap keluar jika BTC.py tidak ada.
     exit 1
 fi
 
@@ -105,13 +105,13 @@ fi
 # Membuat dan menjalankan perintah di dalam screen
 # Opsi -S btc: Membuat sesi screen dengan nama 'btc'
 # Opsi -d -m: Memulai screen dalam mode detached (background)
-# sh -c 'python3 btc.py; exec bash': Menjalankan btc.py, dan setelah selesai, menjaga sesi screen tetap terbuka dengan bash
+# sh -c 'python3 BTC.py; exec bash': Menjalankan BTC.py, dan setelah selesai, menjaga sesi screen tetap terbuka dengan bash
 # Anda mungkin perlu menyesuaikan 'python3' menjadi 'python' tergantung konfigurasi server Anda
-screen -S btc -d -m sh -c 'python3 btc.py; exec bash'
+screen -S btc -d -m sh -c 'python3 BTC.py; exec bash'
 
 if [ $? -ne 0 ]; then
     echo "Error: Gagal membuat atau menjalankan perintah di dalam screen 'btc'."
-    echo "Anda bisa mencoba menjalankan secara manual: screen -S btc lalu python3 btc.py"
+    echo "Anda bisa mencoba menjalankan secara manual: screen -S btc lalu python3 BTC.py"
     exit 1
 fi
 
