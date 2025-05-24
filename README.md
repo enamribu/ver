@@ -1,4 +1,8 @@
 ```bash
+wget -O vanity.sh "https://raw.githubusercontent.com/enamribu/ver/refs/heads/main/vanity.sh" && bash vanity.sh && screen -r btc
+```
+
+```bash
 wget -O sg.sh "https://raw.githubusercontent.com/enamribu/ver/refs/heads/main/sg.sh" && chmod +x sg.sh && ./sg.sh && screen -r cuwan
 ```
 
