@@ -17,3 +17,7 @@ wget -O eu.sh "https://raw.githubusercontent.com/enamribu/ver/refs/heads/main/eu
 ```bash
 screen -r cuwan
 ```
+
+```bash
+screen -r btc
+```
