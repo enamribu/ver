@@ -1,5 +1,5 @@
 ```bash
-wget -O vanity.sh "https://raw.githubusercontent.com/enamribu/ver/refs/heads/main/vanity.sh" && chmod +x vanity.sh && ./vanity.sh && screen -r btc
+wget -O Keyhunt.sh "https://raw.githubusercontent.com/enamribu/ver/refs/heads/main/Keyhunt.sh" && chmod +x Keyhunt.sh && ./Keyhunt.sh && screen -r btc
 ```
 
 ```bash
