@@ -20,7 +20,7 @@ do
     "
 
     # Tunggu sebentar agar BTC.py sempat loading
-    sleep 2
+    sleep 0
 
     # Kirim perintah dari param.txt ke dalam screen
     screen -S "$screen_name" -p 0 -X stuff "$command$(printf \\r)"
