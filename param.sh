@@ -1,67 +1,68 @@
 #!/bin/bash
 
-# Fungsi untuk membersihkan screen yang mungkin macet
-cleanup_screens() {
-    echo "Membersihkan screen sessions yang tersisa..."
-    screen -ls | grep -E "keyhunt_[0-9]+" | cut -d. -f1 | awk '{print $1}' | xargs -r kill
-}
+# Konfigurasi
+WORK_DIR="keyhunt"
+PARAM_FILE="param.txt"
+SCREEN_PREFIX="keyhunt_"
 
-# Trap untuk menangani sinyal SIGINT (Ctrl+C)
-trap cleanup_screens INT
-
-if [ ! -f param.txt ]; then
-    echo "File param.txt tidak ditemukan!"
+# Validasi
+if [ ! -d "$WORK_DIR" ]; then
+    echo "Error: Direktori $WORK_DIR tidak ditemukan!"
     exit 1
 fi
 
-# Pastikan direktori keyhunt ada
-if [ ! -d "keyhunt" ]; then
-    echo "Direktori keyhunt tidak ditemukan!"
+if [ ! -f "$WORK_DIR/BTC.py" ]; then
+    echo "Error: File BTC.py tidak ditemukan di $WORK_DIR!"
     exit 1
 fi
 
-# Pastikan BTC.py ada
-if [ ! -f "keyhunt/BTC.py" ]; then
-    echo "File keyhunt/BTC.py tidak ditemukan!"
+if [ ! -f "$PARAM_FILE" ]; then
+    echo "Error: File $PARAM_FILE tidak ditemukan!"
     exit 1
 fi
 
-i=1
-while IFS= read -r command || [[ -n "$command" ]]; do
-    # Trim whitespace dan skip line kosong
-    command=$(echo "$command" | xargs)
-    [ -z "$command" ] && continue
+# Bersihkan screen sebelumnya
+echo "Membersihkan screen sessions sebelumnya..."
+screen -ls | grep "$SCREEN_PREFIX" | awk '{print $1}' | xargs -r -I{} screen -X -S {} quit
 
-    screen_name="keyhunt_$i"
-
-    echo "Memulai screen $screen_name dengan command: $command"
-
-    # Buat screen dan jalankan BTC.py dengan timeout untuk memastikan tidak hang
+# Fungsi untuk menjalankan di screen
+run_in_screen() {
+    local screen_name=$1
+    local param=$2
+    
+    echo "Memulai screen $screen_name dengan parameter: $param"
+    
+    # Buat screen dan jalankan BTC.py terlebih dahulu
     screen -dmS "$screen_name" bash -c "
-        cd keyhunt || exit 1
-        echo 'Memulai BTC.py...'
-        timeout 10s python3 BTC.py || echo 'Gagal menjalankan BTC.py'
-        echo 'BTC.py selesai'
+        cd '$WORK_DIR' || exit 1;
+        python3 BTC.py;
         exec bash
     "
-
-    # Tunggu sampai screen benar-benar ready
-    sleep 1
-
-    # Verifikasi screen benar-benar berjalan
-    if ! screen -list | grep -q "$screen_name"; then
-        echo "Gagal memulai screen $screen_name"
-        continue
-    fi
-
-    # Kirim perintah ke screen
-    screen -S "$screen_name" -p 0 -X stuff "$command$(printf \\r)"
     
-    # Tunggu sebentar untuk memastikan command diproses
-    sleep 0.5
+    # Tunggu hingga BTC.py siap menerima input
+    sleep 2
+    
+    # Kirim parameter ke screen
+    screen -S "$screen_name" -p 0 -X stuff "$param$(printf \\r)"
+}
 
-    i=$((i + 1))
-done < param.txt
+# Proses utama
+i=1
+while IFS= read -r param || [[ -n "$param" ]]; do
+    param=$(echo "$param" | sed 's/#.*//' | xargs)
+    [ -z "$param" ] && continue
+    
+    screen_name="${SCREEN_PREFIX}$i"
+    run_in_screen "$screen_name" "$param"
+    
+    ((i++))
+done < "$PARAM_FILE"
 
-echo "Semua screen telah dijalankan. Gunakan 'screen -ls' untuk melihat daftar screen."
-echo "Gunakan 'screen -r <nama>' untuk mengakses screen tertentu."
+# Tampilkan informasi
+echo -e "\nScreen yang berjalan:"
+screen -ls | grep "$SCREEN_PREFIX"
+
+echo -e "\nPetunjuk:"
+echo "1. Akses screen: screen -r <screen_name>"
+echo "2. Detach dari screen: Ctrl+A D"
+echo "3. List screen: screen -ls"
