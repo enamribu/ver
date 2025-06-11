@@ -40,7 +40,7 @@ run_in_screen() {
     "
     
     # Tunggu hingga BTC.py siap menerima input
-    sleep 2
+    sleep 0.5
     
     # Kirim parameter ke screen
     screen -S "$screen_name" -p 0 -X stuff "$param$(printf \\r)"
