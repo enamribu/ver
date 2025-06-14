@@ -30,7 +30,7 @@ run_in_screen() {
     local screen_name=$1
     local param=$2
     
-    echo "Memulai screen $screen_name dengan parameter: $param"
+    echo "Memulai screen $screen_name"
     
     # Buat screen dan jalankan BTC.py terlebih dahulu
     screen -dmS "$screen_name" bash -c "
@@ -40,7 +40,7 @@ run_in_screen() {
     "
     
     # Tunggu hingga BTC.py siap menerima input
-    sleep 0.5
+    sleep 0.3
     
     # Kirim parameter ke screen
     screen -S "$screen_name" -p 0 -X stuff "$param$(printf \\r)"
