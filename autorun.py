@@ -57,10 +57,16 @@ KEYHUNT_PARAMS = [
     "-f", "tests/71.txt",
     "-t", "1",
     "-R",
-    "-s", "3",
+    "-s", "5",
     "-q",
     "-n", "0x1000",
 ]
+# Determine the -f option dynamically
+try:
+    f_index = KEYHUNT_PARAMS.index('-f')
+    FILE_OPTION = f"-f {KEYHUNT_PARAMS[f_index+1]}"
+except (ValueError, IndexError):
+    FILE_OPTION = ''
 
 #----------------------------
 # AUTO-SPAWN DI SCREEN
@@ -126,7 +132,8 @@ def launch_sessions():
             f"cd keyhunt && ./keyhunt -r {start}:{stop} {' '.join(KEYHUNT_PARAMS)}"
         ]
         subprocess.Popen(cmd)
-        print(f"[+] Started {session}: -r {start}:{stop}")
+        # Dynamically include the -f option in log
+        print(f"[+] Started {session}: -r {start}:{stop} {FILE_OPTION}")
 
 #----------------------------
 # MAIN LOOP
