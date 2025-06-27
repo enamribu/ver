@@ -66,7 +66,7 @@ KEYHUNT_PARAMS = [
     "-l", "compress",
     "-m", "address",
     "-c", "btc",
-    "-f", "tests/71.txt",
+    "-f", "tests/73.txt",
     "-t", "1",
     "-R",
     "-s", "5",
