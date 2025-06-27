@@ -18,7 +18,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 KEYFOUND_FILE = os.path.join(SCRIPT_DIR, 'keyhunt', 'KEYFOUNDKEYFOUND.txt')
 
 #----------------------------
-# ARGUMENTS (SEMUA PARAMETER WAJIB)
+# ARGUMENTS
 #----------------------------
 parser = argparse.ArgumentParser(
     description='Persistent Keyhunt Randomizer in screen with Telegram alert',
@@ -29,7 +29,6 @@ parser = argparse.ArgumentParser(
     formatter_class=argparse.RawTextHelpFormatter
 )
 
-# Semua parameter dibuat required=True
 parser.add_argument(
     '--range', required=True, dest='hex_range',
     help='Hex range dalam format <start>:<stop> (tanpa 0x) [WAJIB]'
@@ -56,23 +55,19 @@ args = parser.parse_args()
 #----------------------------
 # VALIDASI PARAMETER
 #----------------------------
-# Validasi range
 try:
     MIN_RANGE, MAX_RANGE = args.hex_range.split(':', 1)
-    # Pastikan format hex valid
     int(MIN_RANGE, 16)
     int(MAX_RANGE, 16)
 except ValueError as e:
     print(f"Error: Range tidak valid - {e}")
     sys.exit(1)
 
-# Validasi sessions
 NUM_SESSIONS = args.sessions
 if NUM_SESSIONS < 1:
     print("Error: Jumlah sessions minimal 1")
     sys.exit(1)
 
-# Validasi interval
 num_str, unit_str = args.interval
 if not num_str.isdigit() or unit_str.lower() not in ('menit', 'jam'):
     print("Error: --interval harus 'X menit' atau 'X jam'")
@@ -82,10 +77,8 @@ unit = unit_str.lower()
 INTERVAL = num * (60 if unit == 'menit' else 3600)
 INTERVAL_STR = f"{num} {unit}"
 
-# Validasi dan parse parameter keyhunt
 try:
     KEYHUNT_PARAMS = shlex.split(args.params)
-    # Validasi minimal parameter wajib
     if '-m' not in KEYHUNT_PARAMS or '-f' not in KEYHUNT_PARAMS:
         print("Error: Parameter keyhunt harus mencakup minimal -m dan -f")
         sys.exit(1)
@@ -93,7 +86,6 @@ except Exception as e:
     print(f"Error parsing --params: {e}")
     sys.exit(1)
 
-# Ambil nama file untuk info logging
 try:
     file_idx = KEYHUNT_PARAMS.index('-f')
     FILE_OPTION = KEYHUNT_PARAMS[file_idx+1]
@@ -103,7 +95,7 @@ except ValueError:
 MASTER_SCREEN = args.screen_name
 
 #----------------------------
-# [FUNGSI UTILITAS SAMA DENGAN SEBELUMNYA...]
+# FUNGSI UTILITAS
 #----------------------------
 def send_telegram(message: str):
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
@@ -153,7 +145,7 @@ monitor_thread = threading.Thread(target=monitor_keyfound_thread, daemon=True)
 monitor_thread.start()
 
 #----------------------------
-# SCREEN SPAWN (DIMODIFIKASI UNTUK PARAMETER WAJIB)
+# SCREEN SPAWN
 #----------------------------
 if 'STY' not in os.environ:
     script = os.path.abspath(sys.argv[0])
@@ -191,12 +183,14 @@ def launch_sessions():
     for i in range(NUM_SESSIONS):
         s_hex = int_to_hex(breakpoints[i])
         e_hex = int_to_hex(breakpoints[i+1])
+        # Hanya tampilkan range dan file target saja
+        print(f"[+] Started keyhunt_{i}: -r {s_hex}:{e_hex} -f {FILE_OPTION}")
+        # Tetap gunakan semua parameter untuk eksekusi
         subcmd = f"cd keyhunt && ./keyhunt -r {s_hex}:{e_hex} {' '.join(KEYHUNT_PARAMS)}"
         subprocess.Popen(['screen', '-dmS', f'keyhunt_{i}', 'bash', '-lc', subcmd])
-        print(f"[+] Started keyhunt_{i}: -r {s_hex}:{e_hex} {' '.join(KEYHUNT_PARAMS)}")
 
 #----------------------------
-# MAIN LOOP DENGAN INFORMASI LEBIH DETAIL
+# MAIN LOOP
 #----------------------------
 def main():
     print("\n=== KONFIGURASI AKTIF ===")
@@ -205,14 +199,13 @@ def main():
     print(f"Jumlah Session : {NUM_SESSIONS}")
     print(f"Interval       : {INTERVAL_STR}")
     print(f"File Target    : {FILE_OPTION}")
-    print(f"Parameter      : {' '.join(KEYHUNT_PARAMS)}")
     print("="*30 + "\n")
 
     while True:
         kill_old_sessions()
         launch_sessions()
         print(f"\n-- Menunggu {INTERVAL_STR} sebelum regenerasi range --")
-        print(f"{' '.join(KEYHUNT_PARAMS)}")
+        print(f"{' '.join(KEYHUNT_PARAMS)}\n")
         time.sleep(INTERVAL)
 
 if __name__ == '__main__':
