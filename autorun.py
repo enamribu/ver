@@ -38,6 +38,22 @@ parser.add_argument(
     '--screen-name', default='keyhunt_master',
     help='Name of the master screen session'
 )
+# New argument: pass through keyhunt parameters directly
+parser.add_argument(
+    '--keyhunt-params', nargs='+',
+    default=[
+        '-l', 'compress',
+        '-m', 'address',
+        '-c', 'btc',
+        '-f', 'tests/73.txt',
+        '-t', '1',
+        '-R',
+        '-s', '5',
+        '-q',
+        '-n', '0x1000'
+    ],
+    help='Parameters to pass directly to keyhunt executable'
+)
 args = parser.parse_args()
 
 #----------------------------
@@ -60,24 +76,9 @@ INTERVAL = num * (60 if unit == 'menit' else 3600)
 INTERVAL_STR = f"{num} {unit}"
 
 #----------------------------
-# KEYHUNT PARAMETERS
+# KEYHUNT PARAMETERS (override via CLI)
 #----------------------------
-KEYHUNT_PARAMS = [
-    "-l", "compress",
-    "-m", "address",
-    "-c", "btc",
-    "-f", "tests/73.txt",
-    "-t", "1",
-    "-R",
-    "-s", "5",
-    "-q",
-    "-n", "0x1000",
-]
-try:
-    idx = KEYHUNT_PARAMS.index('-f')
-    FILE_OPTION = f"-f {KEYHUNT_PARAMS[idx+1]}"
-except ValueError:
-    FILE_OPTION = ''
+KEYHUNT_PARAMS = args.keyhunt_params
 
 #----------------------------
 # TELEGRAM FUNCTION
@@ -95,7 +96,7 @@ def send_telegram(message: str):
         print(f"[!] Gagal kirim Telegram: {e}")
 
 #----------------------------
-# NEW KEY DETECTION
+# KEYHUNT OUTPUT PARSER
 #----------------------------
 def get_new_keys(filepath: str, last_pos: int):
     new_blocks = []
@@ -116,83 +117,62 @@ def get_new_keys(filepath: str, last_pos: int):
     return new_blocks, last_pos
 
 #----------------------------
-# FORMAT KEY BLOCK
+# SESSION LAUNCHER
 #----------------------------
-def format_key_block(lines):
-    header = 'KEY FOUND!'
-    return header + '\n' + '\n'.join(lines)
+def launch_sessions():
+    """
+    Launch KEYHUNT sessions in detached screen windows.
+    Each session uses range from MIN_RANGE to MAX_RANGE and shared KEYHUNT_PARAMS.
+    """
+    lo = int(MIN_RANGE, 16)
+    hi = int(MAX_RANGE, 16)
+    step = (hi - lo) // NUM_SESSIONS
+    for i in range(NUM_SESSIONS):
+        start = lo + i * step
+        end = start + step - 1 if i < NUM_SESSIONS - 1 else hi
+        s_hex = hex(start)
+        e_hex = hex(end)
+        subcmd = (
+            f"cd keyhunt && ./keyhunt -r {s_hex}:{e_hex} "
+            f"{' '.join(KEYHUNT_PARAMS)}"
+        )
+        session_name = f"keyhunt_{i}"
+        subprocess.Popen(
+            ['screen', '-dmS', session_name, 'bash', '-lc', subcmd]
+        )
+        print(f"[+] Started {session_name}: -r {s_hex}:{e_hex} {' '.join(KEYHUNT_PARAMS)}")
 
 #----------------------------
 # MONITOR THREAD
 #----------------------------
-
-def monitor_keyfound_thread():
-    last_pos = os.path.getsize(KEYFOUND_FILE) if os.path.exists(KEYFOUND_FILE) else 0
+def monitor_keyfound():
+    last_pos = 0
     while True:
-        blocks, last_pos = get_new_keys(KEYFOUND_FILE, last_pos)
-        for blk in blocks:
-            msg = format_key_block(blk)
-            print(f"[+] {msg}")
-            send_telegram(msg)
-        time.sleep(1)
-
-monitor_thread = threading.Thread(target=monitor_keyfound_thread, daemon=True)
-monitor_thread.start()
-
-#----------------------------
-# SCREEN SPAWN IF NEEDED
-#----------------------------
-if 'STY' not in os.environ:
-    script = os.path.abspath(sys.argv[0])
-    cmd = (
-        f"python3 {script} --range {MIN_RANGE}:{MAX_RANGE}"
-        f" --sessions {NUM_SESSIONS} --interval {num} {unit}"
-        f" --screen-name {MASTER_SCREEN}"
-    )
-    subprocess.Popen(['screen', '-dmS', MASTER_SCREEN, 'bash', '-lc', cmd])
-    print(f"[+] Launched in screen '{MASTER_SCREEN}' and attaching...")
-    time.sleep(1)
-    os.execvp('screen', ['screen', '-r', MASTER_SCREEN])
-
-#----------------------------
-# HELPERS & SESSION MGMT
-#----------------------------
-
-def hex_to_int(h: str) -> int:
-    return int(h, 16)
-
-def int_to_hex(i: int) -> str:
-    return format(i, 'x')
-
-def kill_old_sessions():
-    for i in range(NUM_SESSIONS):
-        subprocess.run(['screen', '-S', f'keyhunt_{i}', '-X', 'quit'],
-                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-def launch_sessions():
-    lo, hi = hex_to_int(MIN_RANGE), hex_to_int(MAX_RANGE)
-    pts = set()
-    while len(pts) < NUM_SESSIONS - 1:
-        pts.add(random.randint(lo, hi))
-    breakpoints = [lo] + sorted(pts) + [hi]
-    for i in range(NUM_SESSIONS):
-        s_hex = int_to_hex(breakpoints[i])
-        e_hex = int_to_hex(breakpoints[i+1])
-        subcmd = f"cd keyhunt && ./keyhunt -r {s_hex}:{e_hex} {' '.join(KEYHUNT_PARAMS)}"
-        subprocess.Popen(['screen', '-dmS', f'keyhunt_{i}', 'bash', '-lc', subcmd])
-        print(f"[+] Started keyhunt_{i}: -r {s_hex}:{e_hex} {FILE_OPTION}")
+        new_blocks, last_pos = get_new_keys(KEYFOUND_FILE, last_pos)
+        for block in new_blocks:
+            message = '\n'.join(block)
+            send_telegram(f"[KEY FOUND]\n{message}")
+        time.sleep(5)
 
 #----------------------------
 # MAIN LOOP
 #----------------------------
-
 def main():
-    print(f"=== Keyhunt Randomizer Started in '{MASTER_SCREEN}' ===")
+    # Spawn monitor thread
+    monitor_thread = threading.Thread(target=monitor_keyfound, daemon=True)
+    monitor_thread.start()
+
+    # Initial launch
+    launch_sessions()
+    print(f"-- Semua {NUM_SESSIONS} sesi berjalan di screen '{MASTER_SCREEN}'")
+
+    # Periodic regeneration
     while True:
-        kill_old_sessions()
-        launch_sessions()
         print(f"-- Menunggu {INTERVAL_STR} sebelum regenerasi range --\n")
         time.sleep(INTERVAL)
+        # Reload sessions
+        subprocess.call(['screen', '-S', MASTER_SCREEN, '-X', 'quit'])
+        launch_sessions()
 
 if __name__ == '__main__':
     main()
