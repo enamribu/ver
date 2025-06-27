@@ -204,8 +204,7 @@ def main():
     while True:
         kill_old_sessions()
         launch_sessions()
-        print(f"\n-- Menunggu {INTERVAL_STR} sebelum regenerasi range --")
-        print(f"{' '.join(KEYHUNT_PARAMS)}\n")
+        print(f"\n{INTERVAL_STR} "{' '.join(KEYHUNT_PARAMS)}"")
         time.sleep(INTERVAL)
 
 if __name__ == '__main__':
