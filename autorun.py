@@ -212,7 +212,7 @@ def main():
         kill_old_sessions()
         launch_sessions()
         print(f"\n-- Menunggu {INTERVAL_STR} sebelum regenerasi range --")
-        print(f"Next refresh pada: {time.ctime(time.time() + INTERVAL)}\n")
+        print(f"{' '.join(KEYHUNT_PARAMS)}")
         time.sleep(INTERVAL)
 
 if __name__ == '__main__':
