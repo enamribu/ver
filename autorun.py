@@ -38,12 +38,12 @@ parser.add_argument(
     help='Jumlah sesi parallel [WAJIB]'
 )
 parser.add_argument(
-    '--min-interval', type=int, default=30,
-    help='Minimum interval dalam menit (default: 30 menit)'
+    '--min-interval', type=int, default=15,
+    help='Minimum interval dalam menit (default: 15 menit)'
 )
 parser.add_argument(
-    '--max-interval', type=int, default=60,
-    help='Maximum interval dalam menit (default: 60 menit/1 jam)'
+    '--max-interval', type=int, default=75,
+    help='Maximum interval dalam menit (default: 75 menit)'
 )
 parser.add_argument(
     '--params', required=True,
