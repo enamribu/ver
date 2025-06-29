@@ -223,7 +223,7 @@ def main():
         interval_seconds, interval_str = generate_random_interval(
             args.min_interval, args.max_interval
         )
-        print(f"\n > {interval_str} < {' '.join(KEYHUNT_PARAMS)}")
+        print(f"\n> {interval_str} < {' '.join(KEYHUNT_PARAMS)}")
         time.sleep(interval_seconds)
 
 if __name__ == '__main__':
