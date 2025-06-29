@@ -137,11 +137,11 @@ def generate_random_interval(min_minutes, max_minutes):
     remaining_minutes = minutes % 60
     
     if hours > 0 and remaining_minutes > 0:
-        interval_str = f"{hours} jam {remaining_minutes} menit"
+        interval_str = f"{hours} J {remaining_minutes} M"
     elif hours > 0:
-        interval_str = f"{hours} jam"
+        interval_str = f"{hours} J"
     else:
-        interval_str = f"{minutes} menit"
+        interval_str = f"{minutes} M"
     
     return minutes * 60, interval_str
 
