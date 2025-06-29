@@ -24,7 +24,7 @@ parser = argparse.ArgumentParser(
     description='Persistent Keyhunt Randomizer in screen with Telegram alert',
     epilog='Contoh penggunaan:\n'
            './autorun.py --range 1ce35f60c4c83be2765:1ffffffffffffffffff '
-           '--sessions 16 --interval 3 jam '
+           '--sessions 16 '
            '--params "-l compress -m address -c btc -f tests/73.txt -t 1 -R -s 10 -q -n 0x1000"',
     formatter_class=argparse.RawTextHelpFormatter
 )
@@ -38,8 +38,12 @@ parser.add_argument(
     help='Jumlah sesi parallel [WAJIB]'
 )
 parser.add_argument(
-    '--interval', nargs=2, metavar=('NUM', 'UNIT'), required=True,
-    help='Interval regenerasi, contoh: 3 jam atau 10 menit [WAJIB]'
+    '--min-interval', type=int, default=30,
+    help='Minimum interval dalam menit (default: 30 menit)'
+)
+parser.add_argument(
+    '--max-interval', type=int, default=60,
+    help='Maximum interval dalam menit (default: 60 menit/1 jam)'
 )
 parser.add_argument(
     '--params', required=True,
@@ -68,14 +72,9 @@ if NUM_SESSIONS < 1:
     print("Error: Jumlah sessions minimal 1")
     sys.exit(1)
 
-num_str, unit_str = args.interval
-if not num_str.isdigit() or unit_str.lower() not in ('menit', 'jam'):
-    print("Error: --interval harus 'X menit' atau 'X jam'")
+if args.min_interval < 1 or args.max_interval < args.min_interval:
+    print("Error: Interval minimum harus lebih kecil dari maximum dan minimal 1 menit")
     sys.exit(1)
-num = int(num_str)
-unit = unit_str.lower()
-INTERVAL = num * (60 if unit == 'menit' else 3600)
-INTERVAL_STR = f"{num} {unit}"
 
 try:
     KEYHUNT_PARAMS = shlex.split(args.params)
@@ -131,6 +130,21 @@ def format_key_block(lines):
     header = 'KEY FOUND!'
     return header + '\n' + '\n'.join(lines)
 
+def generate_random_interval(min_minutes, max_minutes):
+    """Generate random interval in seconds between min and max minutes"""
+    minutes = random.randint(min_minutes, max_minutes)
+    hours = minutes // 60
+    remaining_minutes = minutes % 60
+    
+    if hours > 0 and remaining_minutes > 0:
+        interval_str = f"{hours} jam {remaining_minutes} menit"
+    elif hours > 0:
+        interval_str = f"{hours} jam"
+    else:
+        interval_str = f"{minutes} menit"
+    
+    return minutes * 60, interval_str
+
 def monitor_keyfound_thread():
     last_pos = os.path.getsize(KEYFOUND_FILE) if os.path.exists(KEYFOUND_FILE) else 0
     while True:
@@ -151,7 +165,9 @@ if 'STY' not in os.environ:
     script = os.path.abspath(sys.argv[0])
     cmd = (
         f"python3 {script} --range {MIN_RANGE}:{MAX_RANGE}"
-        f" --sessions {NUM_SESSIONS} --interval {num} {unit}"
+        f" --sessions {NUM_SESSIONS}"
+        f" --min-interval {args.min_interval}"
+        f" --max-interval {args.max_interval}"
         f" --params '{args.params}'"
         f" --screen-name {MASTER_SCREEN}"
     )
@@ -183,9 +199,7 @@ def launch_sessions():
     for i in range(NUM_SESSIONS):
         s_hex = int_to_hex(breakpoints[i])
         e_hex = int_to_hex(breakpoints[i+1])
-        # Hanya tampilkan range dan file target saja
         print(f"[+] Started keyhunt_{i}: -r {s_hex}:{e_hex} -f {FILE_OPTION}")
-        # Tetap gunakan semua parameter untuk eksekusi
         subcmd = f"cd keyhunt && ./keyhunt -r {s_hex}:{e_hex} {' '.join(KEYHUNT_PARAMS)}"
         subprocess.Popen(['screen', '-dmS', f'keyhunt_{i}', 'bash', '-lc', subcmd])
 
@@ -197,15 +211,20 @@ def main():
     print(f"Master Screen  : {MASTER_SCREEN}")
     print(f"Hex Range      : {MIN_RANGE}:{MAX_RANGE}")
     print(f"Jumlah Session : {NUM_SESSIONS}")
-    print(f"Interval       : {INTERVAL_STR}")
+    print(f"Interval Range : {args.min_interval} - {args.max_interval} menit")
     print(f"File Target    : {FILE_OPTION}")
     print("="*30 + "\n")
 
     while True:
         kill_old_sessions()
         launch_sessions()
-        print(f"\n > {INTERVAL_STR} < {' '.join(KEYHUNT_PARAMS)}")
-        time.sleep(INTERVAL)
+        
+        # Generate random interval each cycle
+        interval_seconds, interval_str = generate_random_interval(
+            args.min_interval, args.max_interval
+        )
+        print(f"\n > Interval berikutnya: {interval_str} < {' '.join(KEYHUNT_PARAMS)}")
+        time.sleep(interval_seconds)
 
 if __name__ == '__main__':
     main()
