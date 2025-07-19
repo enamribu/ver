@@ -78,18 +78,19 @@ if args.min_interval < 1 or args.max_interval < args.min_interval:
 
 try:
     KEYHUNT_PARAMS = shlex.split(args.params)
-    if '-m' not in KEYHUNT_PARAMS or '-f' not in KEYHUNT_PARAMS:
-        print("Error: Parameter keyhunt harus mencakup minimal -m dan -f")
+    if '-m' not in KEYHUNT_PARAMS:
+        print("Error: Parameter keyhunt harus mencakup minimal -m")
         sys.exit(1)
 except Exception as e:
     print(f"Error parsing --params: {e}")
     sys.exit(1)
 
+FILE_OPTION = 'N/A'  # Default value
 try:
     file_idx = KEYHUNT_PARAMS.index('-f')
     FILE_OPTION = KEYHUNT_PARAMS[file_idx+1]
 except ValueError:
-    FILE_OPTION = 'unknown'
+    pass  # Tidak menggunakan parameter -f
 
 MASTER_SCREEN = args.screen_name
 
