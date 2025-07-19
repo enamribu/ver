@@ -25,8 +25,7 @@ parser = argparse.ArgumentParser(
     epilog='Contoh penggunaan:\n'
            './autorun.py --range 1ce35f60c4c83be2765:1ffffffffffffffffff '
            '--sessions 16 '
-           '--params "-l compress -m address -c btc -f tests/73.txt -t 1 -R -s 10 -q -n 0x1000"'
-           '--params "-m vanity -l compress -t 1 -R -s 5 -q -v 1PWo3JeB9jrGwfHDNpdGK54CRas7f"',
+           '--params "-l compress -m address -c btc -f tests/73.txt -t 1 -R -s 10 -q -n 0x1000"',
     formatter_class=argparse.RawTextHelpFormatter
 )
 
