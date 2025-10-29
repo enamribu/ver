@@ -1,5 +1,5 @@
 @echo off
-title Script Gabungan
+title AIO
 color 0A
 
 echo ==========================================
@@ -80,3 +80,4 @@ echo **********************************************
 
 :: Hapus diri sendiri di akhir
 echo exit | timeout /t 3 >nul & del "%~f0"
+
